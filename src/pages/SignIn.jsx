@@ -2,12 +2,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faUnlockAlt } from "@fortawesome/free-solid-svg-icons";
 import { Col, Row, Form, Card, Button, Container, InputGroup, Spinner } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
-// import "../../styles/SignIn.css";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
 import React from "react";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import axios from "./../utils/axios";
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -30,25 +30,23 @@ export default function SignIn() {
                     password: Yup.string().required("Password Required"),
                   })}
                   onSubmit={(values) => {
-                    // setIsLoading(true); // Set isLoading to true when form is submitted
-                    // axios
-                    //   .post("/authenticate", { username: values.email, password: values.password })
-                    //   .then((response) => {
-                    //     if (response.status === 200) {
-                    //       localStorage.setItem("token", response.data.token);
-                    //       localStorage.setItem("user", JSON.stringify(response.data.user));
-                    //       navigate(PathConstants.CATEGORIES);
-                    //     } else {
-                    //       toast.error("Invalid signin");
-                    //     }
-                    //   })
-                    //   .catch((error) => {
-                    //     console.log(error);
-                    //     toast.error("Invalid signin");
-                    //   })
-                    //   .finally(() => {
-                    //     setIsLoading(false); // Set isLoading to false when request is complete
-                    //   });
+                    setIsLoading(true); // Set isLoading to true when form is submitted
+                    axios
+                      .post("/api/auth/signin", { username: values.email, password: values.password })
+                      .then((response) => {
+                        if (response.status === 200) {
+                          toast.success("Signin successful");
+                        } else {
+                          toast.error("Invalid signin");
+                        }
+                      })
+                      .catch((error) => {
+                        console.log(error);
+                        toast.error("Invalid signin");
+                      })
+                      .finally(() => {
+                        setIsLoading(false); // Set isLoading to false when request is complete
+                      });
                   }}
                 >
                   {({ handleSubmit, handleChange, touched, errors }) => (

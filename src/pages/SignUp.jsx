@@ -4,6 +4,9 @@ import { Col, Row, Form, Card, Button, FormCheck, Container, InputGroup } from "
 import { Link, useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import axios from "./../utils/axios";
+import { toast, ToastContainer } from "react-toastify";
+
 export default function SignUp() {
   const navigate = useNavigate();
   return (
@@ -17,18 +20,64 @@ export default function SignUp() {
                   <h3 className="mb-0">Create an account</h3>
                 </div>
                 <Formik
-                  initialValues={{ email: "", password: "", confirmPassword: "" }}
+                  initialValues={{
+                    firstName: "",
+                    lastName: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                  }}
                   validationSchema={Yup.object({
-                    email: Yup.string().email("Invalid email address"),
-                    password: Yup.string().min(8, "Must be 8 characters or more"),
-                    confirmPassword: Yup.string().oneOf([Yup.ref("password"), null], "Passwords must match"),
+                    firstName: Yup.string().required("Required"),
+                    lastName: Yup.string().required("Required"),
+                    email: Yup.string().email("Invalid email address").required("Required"),
+                    password: Yup.string().min(8, "Must be 8 characters or more").required("Required"),
+                    confirmPassword: Yup.string()
+                      .oneOf([Yup.ref("password"), null], "Passwords must match")
+                      .required("Required"),
                   })}
                   onSubmit={(values) => {
-                    console.log(values);
+                    axios
+                      .post("/api/auth/signup", {
+                        firstName: values.firstName,
+                        lastName: values.lastName,
+                        username: values.email,
+                        password: values.password,
+                      })
+                      .then((response) => {
+                        console.log(response);
+                        if (response.status === 201) {
+                          toast.success("Signup successful");
+                        } else {
+                          toast.error("Invalid signup");
+                        }
+                      })
+                      .catch((error) => {
+                        console.log(error);
+                        toast.error("Invalid signup");
+                      });
                   }}
                 >
                   {({ handleSubmit, handleChange, errors, touched }) => (
                     <Form className="mt-4" onSubmit={handleSubmit}>
+                      <Row>
+                        <Col>
+                          <Form.Group id="firstName" className="mb-4">
+                            <Form.Label>Your First Name</Form.Label>
+                            <InputGroup>
+                              <Form.Control autoFocus required type="text" id="firstName" placeholder="First Name" onChange={handleChange} />
+                            </InputGroup>
+                          </Form.Group>
+                        </Col>
+                        <Col>
+                          <Form.Group id="lastName" className="mb-4">
+                            <Form.Label>Your Last Name</Form.Label>
+                            <InputGroup>
+                              <Form.Control required type="text" id="lastName" placeholder="Last Name" onChange={handleChange} />
+                            </InputGroup>
+                          </Form.Group>
+                        </Col>
+                      </Row>
                       <Form.Group id="email" className="mb-4">
                         <Form.Label>Your Email</Form.Label>
                         <InputGroup>
