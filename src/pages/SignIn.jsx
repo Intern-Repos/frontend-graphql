@@ -35,7 +35,8 @@ export default function SignIn() {
                       .post("/api/auth/signin", { username: values.email, password: values.password })
                       .then((response) => {
                         if (response.status === 200) {
-                          toast.success("Signin successful");
+                          localStorage.setItem("user", JSON.stringify(response.data));
+                          navigate("/home");
                         } else {
                           toast.error("Invalid signin");
                         }

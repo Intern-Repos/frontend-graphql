@@ -36,7 +36,7 @@ export default function SignUp() {
                       .oneOf([Yup.ref("password"), null], "Passwords must match")
                       .required("Required"),
                   })}
-                  onSubmit={(values) => {
+                  onSubmit={(values, { resetForm }) => {
                     axios
                       .post("/api/auth/signup", {
                         firstName: values.firstName,
@@ -48,13 +48,14 @@ export default function SignUp() {
                         console.log(response);
                         if (response.status === 201) {
                           toast.success("Signup successful");
+                          navigate("/");
                         } else {
                           toast.error("Invalid signup");
                         }
                       })
                       .catch((error) => {
-                        console.log(error);
-                        toast.error("Invalid signup");
+                        console.log(error.response);
+                        toast.error(error.response.data);
                       });
                   }}
                 >
