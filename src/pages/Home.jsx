@@ -3,30 +3,18 @@ import { Table, Form, Button } from "react-bootstrap";
 import { Formik, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "./../utils/axios";
+import { useQuery } from "@apollo/client";
+import { GET_HOBBIES } from "../graphql/hobby";
 
 const Home = () => {
   const user = JSON.parse(localStorage.getItem("user"));
-  const [hobbies, setHobbies] = useState([]);
-
-  useEffect(() => {
-    // Fetch hobbies when the component mounts
-    fetchHobbies();
-  }, []);
-
-  const fetchHobbies = () => {
-    axios
-      .get(`api/hobby/${user.id}`)
-      .then((response) => {
-        setHobbies(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching hobbies:", error);
-      });
-  };
+  const { data, loading, error } = useQuery(GET_HOBBIES, {
+    variables: { userId: user.id },
+  });
 
   const handleAddHobby = (values, { resetForm }) => {
     axios
-      .post("/api/hobby/add", { hobbyName: values.newHobby, user: { id: 1 } })
+      .post("/api/hobby/add", { hobbyName: values.newHobby, user: { id: user.id } })
       .then(() => {
         resetForm();
         fetchHobbies(); // Fetch updated list of hobbies after adding a new one
@@ -47,6 +35,7 @@ const Home = () => {
       });
   };
 
+  if (loading) return <p>Loading...</p>;
   return (
     <div>
       <Formik
@@ -84,7 +73,7 @@ const Home = () => {
           </tr>
         </thead>
         <tbody>
-          {hobbies.map((hobby) => (
+          {data.getHobbiesByUserId.map((hobby) => (
             <tr key={hobby.id}>
               <td>{hobby.id}</td>
               <td>{hobby.hobbyName}</td>

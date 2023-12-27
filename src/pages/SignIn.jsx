@@ -4,14 +4,13 @@ import { Col, Row, Form, Card, Button, Container, InputGroup, Spinner } from "re
 import { Link, useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
-import React from "react";
-import { ToastContainer, toast } from "react-toastify";
-import axios from "./../utils/axios";
+import { toast } from "react-toastify";
+import { useMutation } from "@apollo/client";
+import { SIGNIN } from "../graphql/auth";
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false); // Add isLoading state variable
+  const [signIn, { loading }] = useMutation(SIGNIN);
 
   return (
     <main className="main">
@@ -30,23 +29,19 @@ export default function SignIn() {
                     password: Yup.string().required("Password Required"),
                   })}
                   onSubmit={(values) => {
-                    setIsLoading(true); // Set isLoading to true when form is submitted
-                    axios
-                      .post("/api/auth/signin", { username: values.email, password: values.password })
-                      .then((response) => {
-                        if (response.status === 200) {
-                          localStorage.setItem("user", JSON.stringify(response.data));
-                          navigate("/home");
-                        } else {
-                          toast.error("Invalid signin");
-                        }
+                    signIn({
+                      variables: {
+                        username: values.email,
+                        password: values.password,
+                      },
+                    })
+                      .then((res) => {
+                        toast.success("Login success");
+                        localStorage.setItem("user", JSON.stringify(res.data.signIn));
+                        navigate("/home");
                       })
-                      .catch((error) => {
-                        console.log(error);
-                        toast.error("Invalid signin");
-                      })
-                      .finally(() => {
-                        setIsLoading(false); // Set isLoading to false when request is complete
+                      .catch((err) => {
+                        toast.error(err.message);
                       });
                   }}
                 >
@@ -75,7 +70,7 @@ export default function SignIn() {
                         </Form.Group>
                         <div className="d-flex justify-content-between align-items-center mb-4"></div>
                       </Form.Group>
-                      {isLoading ? ( // Conditionally render loading icon or submit button
+                      {loading ? ( // Conditionally render loading icon or submit button
                         <Button variant="primary" type="submit" className="button w-100" disabled>
                           <Spinner animation="border" size="sm" /> Loading...
                         </Button>

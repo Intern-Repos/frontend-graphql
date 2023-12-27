@@ -5,10 +5,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import axios from "./../utils/axios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
+import { useMutation } from "@apollo/client";
+import { SIGNUP } from "../graphql/auth";
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const [signUp, { loading }] = useMutation(SIGNUP);
   return (
     <main className="main">
       <section className="d-flex align-items-center my-5 mt-lg-6 mb-lg-5">
@@ -37,25 +40,23 @@ export default function SignUp() {
                       .required("Required"),
                   })}
                   onSubmit={(values, { resetForm }) => {
-                    axios
-                      .post("/api/auth/signup", {
-                        firstName: values.firstName,
-                        lastName: values.lastName,
-                        username: values.email,
-                        password: values.password,
+                    signUp({
+                      variables: {
+                        userInput: {
+                          firstName: values.firstName,
+                          lastName: values.lastName,
+                          username: values.email,
+                          password: values.password,
+                        },
+                      },
+                    })
+                      .then((res) => {
+                        toast.success("Sign up success");
+                        resetForm();
+                        navigate("/");
                       })
-                      .then((response) => {
-                        console.log(response);
-                        if (response.status === 201) {
-                          toast.success("Signup successful");
-                          navigate("/");
-                        } else {
-                          toast.error("Invalid signup");
-                        }
-                      })
-                      .catch((error) => {
-                        console.log(error.response);
-                        toast.error(error.response.data);
+                      .catch((err) => {
+                        toast.error(err.message);
                       });
                   }}
                 >
